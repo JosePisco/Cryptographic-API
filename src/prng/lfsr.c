@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "lfsr.h"
 
@@ -13,7 +14,12 @@
 static uint64_t lfsr;
 static uint8_t taps[NB_TAPS] = {LFSR_LENGTH, 56, 13, 10};
 
-static uint8_t clock(void)
+void init_lfsr(void)
+{
+    lfsr = clock() * clock() - clock();
+}
+
+static uint8_t lclock(void)
 {
     uint64_t bit = ((lfsr >> (LFSR_LENGTH - taps[0])) ^ (lfsr >> (LFSR_LENGTH - taps[1]))
                     ^ (lfsr >> (LFSR_LENGTH - taps[2])) ^ (lfsr >> (LFSR_LENGTH - taps[3]))) & 1u;
@@ -24,7 +30,7 @@ static uint8_t clock(void)
 void shuffle(void)
 {
     for (uint64_t i = 0; i < SHUFFLE; ++i)
-        clock();
+        lclock();
 }
 
 void stream(uint64_t randomness)
@@ -35,7 +41,7 @@ void stream(uint64_t randomness)
 
     /* Randomness */
     for (uint64_t j = 0; j < randomness; ++j){
-        uint8_t bit = clock();
+        uint8_t bit = lclock();
         printf("%u", bit); //output bit
     }
 
@@ -69,7 +75,7 @@ char *hexrandom(int randomness, uint64_t seed)
     if (randomness % HEX_BIT_SIZE != 0)
         size++;
 
-    char *rand = malloc(size);
+    char *rand = malloc(sizeof(char) * (size + 1));
     /*int count = (HEX_BIT_SIZE - 1 - (randomness % HEX_BIT_SIZE)) % HEX_BIT_SIZE; // bits manquants pour faire un char hexa
     // todo count
     printf("count : %d\n", count);
@@ -100,9 +106,7 @@ char *hexrandom(int randomness, uint64_t seed)
     }
 
     for (int i = 1; i < randomness; ++i) {
-        uint8_t bit = clock();
-        if (i == 0)
-            printf("primier bit %u\n", bit);
+        uint8_t bit = lclock();
         if (bit == 1)
             value += pow2(3 - count);
 
@@ -118,6 +122,7 @@ char *hexrandom(int randomness, uint64_t seed)
 
     shuffle();
     //printf("strng: %s\n", rand);
+    rand[size] = '\0';
     return rand;
 }
 

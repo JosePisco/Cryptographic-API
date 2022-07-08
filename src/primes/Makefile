@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic
 
-CRYPTO_OBJS = primes.o
+CRYPTO_OBJS = primes.o rsa.o dh.o
 OBJS = main.o
 
 #BIN = primes
