@@ -6,9 +6,17 @@
 
 int is_prime(BIGNUM *a)
 {
-    if (BN_baillie_psw(a) == true)
-        return 1;
-    return 0;
+    BN_CTX *ctx;
+    int ret;
+
+    if ((ctx = BN_CTX_new()) == NULL)
+        return 0;
+
+    ret = bn_is_prime_bpsw(a, ctx);
+
+    BN_CTX_free(ctx);
+
+    return ret;
 }
 
 int get_prime(BIGNUM *r, int n)
