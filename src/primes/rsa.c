@@ -32,9 +32,8 @@ struct rsa_key *gen_rsa_key(int nbits)
 
     while (1)
     {
-
         if (!get_prime(p, nbits/2)) goto done;
-        if (!get_prime(q, nbits/2 + 1)) goto done; //
+        if (!get_prime(q, nbits/2 + 1)) goto done;
         if (!BN_mul(n, p, q, ctx)) goto done;
 
         int bitlength = BN_num_bits(n);
