@@ -4,55 +4,52 @@
 #include "../prng/lfsr.h"
 #include "primes.h"
 
-int is_prime(BIGNUM *a)
+int is_prime(BIGNUM *a, BN_CTX *ctx)
 {
-    BN_CTX *ctx;
-    int ret;
-
-    if ((ctx = BN_CTX_new()) == NULL)
-        return 0;
-
-    ret = bn_is_prime_bpsw(a, ctx);
-
-    BN_CTX_free(ctx);
-
-    return ret;
+    return bn_is_prime_bpsw(a, ctx);
 }
 
-int get_prime(BIGNUM *r, int n)
+int get_prime(BIGNUM *r, int n, BN_CTX *ctx)
 {
-    int result = 0;
+    BIGNUM *two, *rand;
+    int ret = 0;
 
-    BIGNUM *bn_two = BN_new();
-    BIGNUM *rand = BN_new();
+    BN_CTX_start(ctx);
 
-    BN_CTX *ctx = BN_CTX_new();
+    if ((two = BN_CTX_get(ctx)) == NULL)
+		goto done;
+	if ((rand = BN_CTX_get(ctx)) == NULL)
+		goto done;
 
-    if (!BN_set_word(bn_two, 2)) goto done;
+    if (!BN_set_word(two, 2))
+        goto done;
 
     char *hexrand = hexrandom(n, 0);
-    //printf("%s\n", hexrand);
-    if (!BN_hex2bn(&rand, hexrand)) goto done;
+    if (!BN_hex2bn(&rand, hexrand))
+        goto done;
     free(hexrand);
 
 
     while (true) {
         if (!BN_is_odd(rand))
-            if (!BN_add(rand, rand, BN_value_one())) goto done;
+            if (!BN_add(rand, rand, BN_value_one()))
+                goto done;
 
-        if (is_prime(rand)) {
-            result = 1;
+        if (is_prime(rand, ctx)) {
+            ret = 1;
             break;
         }
 
-        if (!BN_add(rand, rand, bn_two)) goto done;
+        if (!BN_add(rand, rand, two))
+            goto done;
     }
 
     BN_copy(r, rand);
 
+    ret = 1;
+
     done:
-        BN_free(rand);
-        BN_free(bn_two);
-        BN_CTX_free(ctx);
-        return result;
+        BN_CTX_end(ctx);
+
+        return ret;
 }

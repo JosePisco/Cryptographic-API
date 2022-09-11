@@ -7,7 +7,7 @@
     returns 1 or 0 if the number a is respectively prime or not
     using the Baillie-PSW primality test
 */
-int is_prime(BIGNUM *a);
+int is_prime(BIGNUM *a, BN_CTX *ctx);
 
 /*
     Every prime number is of the form 6k + 1 or 6k - 1
@@ -16,6 +16,6 @@ int is_prime(BIGNUM *a);
     we obtain a prime number or not
     The of n bits prime will be stored in r, previously allocated.
 */
-int get_prime(BIGNUM *r, int n);
+int get_prime(BIGNUM *r, int n, BN_CTX *ctx);
 
 #endif /* GEN_PRIME_H */

@@ -4,16 +4,13 @@
 #include <openssl/bn.h>
 
 typedef struct rsa_key {
-    int bits;
-    BIGNUM *p;
-    BIGNUM *q;
     BIGNUM *e;
     BIGNUM *d;
     BIGNUM *n;
-    BIGNUM *phi;
+    int bits;
 } rsa_key;
 
-rsa_key *gen_rsa_key(int nbits);
+int gen_rsa_key(struct rsa_key *key, int nbits, BN_CTX *ctx);
 
 void free_rsa_key(rsa_key *key);
 

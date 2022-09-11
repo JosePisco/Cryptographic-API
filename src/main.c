@@ -1,6 +1,5 @@
 #include <openssl/bn.h>
 #include <stdio.h>
-#include <time.h>
 
 #include "bpsw/baillie_psw.h"
 #include "primes/primes.h"
@@ -10,16 +9,22 @@
 
 int main(void)
 {
-    // init lfsr
+    BIGNUM *prime;
+    BN_CTX *ctx;
+    int prime_size = 2048;
+
+    if ((ctx = BN_CTX_new()) == NULL)
+        goto done;
+    if ((prime = BN_CTX_get(ctx)) == NULL)
+        goto done;
+
+    /* init lfsr value */
     init_lfsr();
-
-    BIGNUM *prime = BN_new();
-
-    int prime_size = 4096;
 
     printf("generating prime of size %d...", prime_size);
     fflush(stdout);
-    get_prime(prime, prime_size);
+    if (!get_prime(prime, prime_size, ctx))
+        goto done;
 
     char *prime_str = BN_bn2dec(prime);
     printf(" found !\n %s\n", prime_str);
@@ -27,39 +32,38 @@ int main(void)
     free(prime_str);
 
     printf("---------------------------------------------------\n");
-    printf("generating rsa key pair...");
+    printf("generating %d bits rsa key pair...", prime_size);
     fflush(stdout);
-    rsa_key *key = gen_rsa_key(1024);
 
-    printf(" generated !\n\n");
+    prime_size = 1024;
+    rsa_key *key = malloc(sizeof(struct rsa_key));
+    if (!gen_rsa_key(key, prime_size, ctx))
+        goto done;
 
+    printf(" generated !\n");
 
-    char *p_ = BN_bn2dec(key->p);
-    char *q_ = BN_bn2dec(key->q);
     char *e_ = BN_bn2dec(key->e);
     char *n_ = BN_bn2dec(key->n);
-    printf("p = %s\n", p_);
-    printf("q = %s\n", q_);
     printf("e = %s\n", e_);
     printf("n = %s\n", n_);
-    free(p_);
-    free(q_);
     free(e_);
     free(n_);
+    free_rsa_key(key);
 
-    printf("---------------------------------------------------\n");
+    /*printf("---------------------------------------------------\n");
     printf("generating DH modulus...");
     fflush(stdout);
 
-    BIGNUM *dh_modulus = BN_new();
-    gen_dh_modulus(dh_modulus, 1024);
+    BIGNUM *dh_modulus;
+    if ((dh_modulus = BN_CTX_get(ctx)) == NULL)
+        goto done;
+    gen_dh_modulus(dh_modulus, 512, ctx);
     char *dh_str = BN_bn2dec(dh_modulus);
-    printf("p = %s\n", dh_str);
-    free(dh_str);
+    printf(" generated !\np = %s\n", dh_str);
+    free(dh_str);*/
 
-    BN_free(dh_modulus);
+ done:
+    BN_CTX_free(ctx);
 
-    free_rsa_key(key);
-    BN_free(prime);
     return 0;
 }

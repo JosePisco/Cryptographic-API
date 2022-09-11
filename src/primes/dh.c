@@ -2,33 +2,40 @@
 #include "primes.h"
 #include "../prng/lfsr.h"
 
-int gen_dh_privkey(BIGNUM *privkey, int nbits)
-{
-    int result = 0;
-    char *privkey_str = hexrandom(nbits, 0);
-    if (!BN_hex2bn(&privkey, privkey_str)) goto done;
+#define DH_PRIVKEY_LEN 256 /* NIST recommandation*/
 
-    result = 1;
+int gen_dh_privkey(BIGNUM *privkey)
+{
+    int ret = 0;
+    char *privkey_str = hexrandom(DH_PRIVKEY_LEN, 0);
+    if (!BN_hex2bn(&privkey, privkey_str))
+        goto done;
+
+    ret = 1;
 
     done:
         free(privkey_str);
-        return result;
+
+        return ret;
 }
 
-int gen_dh_modulus(BIGNUM *modulus, int nbits)
+int gen_dh_modulus(BIGNUM *modulus, int nbits, BN_CTX *ctx)
 {
-    int result = 0;
+    int ret = 0;
 
     while (1) {
-        get_prime(modulus, nbits - 1);
-        if (!BN_mul_word(modulus, 2)) goto done;
-        if (!BN_add_word(modulus, 1)) goto done;
-        if (is_prime(modulus))
+        if (!get_prime(modulus, nbits - 1, ctx))
+            goto done;
+        if (!BN_mul_word(modulus, 2))
+            goto done;
+        if (!BN_add_word(modulus, 1))
+            goto done;
+        if (is_prime(modulus, ctx))
             break;
     }
 
-    result = 1;
+    ret = 1;
 
     done:
-        return result;
+        return ret;
 }

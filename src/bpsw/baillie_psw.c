@@ -76,19 +76,10 @@ static int bn_strong_lucas_test(const BIGNUM *n, const BIGNUM *D, BN_CTX *ctx)
 static int bn_strong_lucas_selfridge(const BIGNUM *n, BN_CTX *ctx)
 {
 	BIGNUM *D, *two;
-	int jacobi_symbol, perfect_square, sign;
+	int jacobi_symbol, sign;
 	int ret = -1;
 
 	BN_CTX_start(ctx);
-
-	/* If n is a perfect square, it is composite. */
-	//if (!bn_is_square(&perfect_square, n, ctx))
-	//	goto done;
-	//if (perfect_square) {
-	//	ret = 0;
-	//	goto done;
-	//}
-	(void) perfect_square;
 
 	/*
 	 * Find the first element D in the sequence 5, -7, 9, -11, 13, ...
