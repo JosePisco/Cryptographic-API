@@ -13,10 +13,10 @@ int gen_dh_privkey(BIGNUM *privkey)
 
     ret = 1;
 
-    done:
-        free(privkey_str);
+ done:
+    free(privkey_str);
 
-        return ret;
+    return ret;
 }
 
 int gen_dh_modulus(BIGNUM *modulus, int nbits, BN_CTX *ctx)
@@ -36,6 +36,6 @@ int gen_dh_modulus(BIGNUM *modulus, int nbits, BN_CTX *ctx)
 
     ret = 1;
 
-    done:
-        return ret;
+ done:
+    return ret;
 }

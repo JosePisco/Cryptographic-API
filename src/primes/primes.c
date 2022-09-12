@@ -25,6 +25,8 @@ int get_prime(BIGNUM *r, int n, BN_CTX *ctx)
         goto done;
 
     char *hexrand = hexrandom(n, 0);
+    if (hexrand == NULL)
+        goto done;
     if (!BN_hex2bn(&rand, hexrand))
         goto done;
     free(hexrand);

@@ -84,6 +84,9 @@ char *hexrandom(int randomness, uint64_t seed)
         size++;
 
     char *rand = malloc(sizeof(char) * (size + 1));
+    if (rand == NULL)
+        return NULL;
+
     int count = 0;
     int value = 0;
     size_t index = 0;
@@ -126,4 +129,37 @@ char *hexrandom(int randomness, uint64_t seed)
     rand[size] = '\0';
 
     return rand;
+}
+
+/*
+ * requests size bytes of random from entropy source and places it in bytes.
+ * if a seed is specified (non zero), it will use it.
+ */
+int bytesrandom(unsigned char *bytes, int size, uint64_t seed)
+{
+    int ret = 0;
+
+    if (seed)
+        lfsr = seed;
+
+    shuffle();
+
+    int value;
+    for (int i = 0; i < size; i++) {
+        value = 0;
+        for (int j = 0; j < 8; j++) {
+            uint8_t bit = lclock();
+            value += (bit * (1 << j));
+        }
+
+        bytes[i] = value;
+    }
+
+    bytes[size] = '\0';
+
+    shuffle();
+
+    ret = 1;
+
+    return ret;
 }
