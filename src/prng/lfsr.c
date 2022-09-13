@@ -65,51 +65,49 @@ static char get_hex_char(int value)
     return 55 + value;
 }
 
-char *hexrandom(int randomness, uint64_t seed)
+void hexrandom(char *hexrand, int bits, uint64_t seed)
 {
+    int count, value;
+    size_t index;
+
     if (seed)
         lfsr = seed;
 
     shuffle();
 
-    int size = randomness / HEX_BIT_SIZE;
-    if (randomness % HEX_BIT_SIZE != 0)
-        size++;
+    count = 0;
+    value = 0;
+    index = 0;
 
-    char *rand = malloc(sizeof(char) * (size + 1));
-    if (rand == NULL)
-        return NULL;
-
-    int count = 0;
-    int value = 0;
-    size_t index = 0;
-
-    if (randomness % HEX_BIT_SIZE == 0) { // 4
-        count = 3;
-        value = 8;
-    }
-    else if (randomness % HEX_BIT_SIZE == 3) { // 3
-        count = 2;
-        value = 4;
-    }
-    else if (randomness % HEX_BIT_SIZE == 2) { // 2
-        count = 1;
-        value = 2;
-    }
-    else { // 1
-        count = 0;
-        rand[index] = '1';
-        index++;
-        value = 1;
+    switch (bits % HEX_BIT_SIZE) {
+        case 3:
+            count = 2;
+            value = 4;
+            break;
+        case 2:
+            count = 1;
+            value = 2;
+            break;
+        case 1:
+            count = 0;
+            value = 8;
+            hexrand[index] = '1';
+            index++;
+            value = 1;
+            break;
+        default: /* has to be 0 */
+            count = 3;
+            value = 8;
+            break;
     }
 
-    for (int i = 1; i < randomness; ++i) {
+    for (int i = 1; i < bits; ++i) {
         uint8_t bit = lclock();
         if (bit == 1)
             value += (1 << (3 - count));
 
         if (count == 3) {
-            rand[index] = get_hex_char(value);
+            hexrand[index] = get_hex_char(value);
             index++;
             count = 0;
             value = 0;
@@ -119,9 +117,6 @@ char *hexrandom(int randomness, uint64_t seed)
     }
 
     shuffle();
-    rand[size] = '\0';
-
-    return rand;
 }
 
 /*
@@ -159,17 +154,25 @@ int bytesrandom(unsigned char *bytes, int size, uint64_t seed)
 
 int BN_getrandom(BIGNUM *r, int n)
 {
+    int hexsize;
     int ret = 0;
-    char *r_str = hexrandom(n, NO_SEED);
-    if (r_str == NULL)
-        goto done;
+
+    hexsize = n / HEX_BIT_SIZE;
+    if (n % HEX_BIT_SIZE != 0)
+        hexsize++;
+
+    char *r_str = malloc(sizeof(char) * (hexsize + 1));
+    hexrandom(r_str, n, NO_SEED);
+
+    r_str[hexsize] = '\0';
+
     if (!BN_hex2bn(&r, r_str))
         goto done;
-
-    free(r_str);
 
     ret = 1;
 
  done:
+    free(r_str);
+
     return ret;
 }

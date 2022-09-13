@@ -15,7 +15,7 @@
 void init_lfsr();
 
 /* Returns randomness bits of random from the prng in a memory allocated string */
-char *hexrandom(int randomness, uint64_t seed);
+void hexrandom(char *hexrand, int bits, uint64_t seed);
 
 /* Requests size bytes to the entropy source. seed if specified */
 int bytesrandom(unsigned char *bytes, int size, uint64_t seed);
