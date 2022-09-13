@@ -120,13 +120,23 @@ int rsa_decrypt(BIGNUM *m, BIGNUM *c, rsa_key *key, BN_CTX *ctx)
 	return ret;
 }
 
-int BN_sha256(unsigned char *data, unsigned char *md)
+/* compute the sha256 of the bytes related version of BIGNUM a */
+int BN_sha256(unsigned char *md, BIGNUM *a)
 {
 	int ret = 0;
 
-	SHA256(data, 64, md);
+	unsigned char *data = malloc(sizeof(unsigned char) * BN_num_bytes(a));
+	if (data == NULL)
+		goto done;
+	if (!BN_bn2bin(a, data))
+		goto done;
+
+	SHA256(data, BN_num_bytes(a), md);
 
 	ret = 1;
+
+ done:
+	free(data);
 
 	return ret;
 }
@@ -136,15 +146,7 @@ int rsa_pksign(BIGNUM *s, BIGNUM *hash, rsa_key *key, BN_CTX *ctx)
 {
 	int ret = 0;
 
-
 	BN_CTX_start(ctx);
-
-	//unsigned char *md = malloc(sizeof(unsigned char) * SHA256_DIGEST_LENGTH);
-
-	//SHA256(msg, 64, md); // RSA OR HMAC ??? LOL TAS LA REF ?
-	//if (!BN_bin2bn(md, SHA256_DIGEST_LENGTH, hash))
-	//	goto done;
-	//free(md);
 
 	/* s = H(m)^d mod n */
 	if (!BN_mod_exp(s, hash, key->d, key->n, ctx))

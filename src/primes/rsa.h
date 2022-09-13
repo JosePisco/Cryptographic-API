@@ -19,6 +19,11 @@ typedef struct rsa_key {
 int gen_rsa_key(struct rsa_key *key, int nbits, BN_CTX *ctx);
 void free_rsa_key(rsa_key *key);
 
+int rsa_encrypt(BIGNUM *c, BIGNUM *m, rsa_key *key, BN_CTX *ctx);
+int rsa_decrypt(BIGNUM *m, BIGNUM *c, rsa_key *key, BN_CTX *ctx);
+
+int BN_sha256(unsigned char *md, BIGNUM *a);
+
 int rsa_pksign(BIGNUM *s, BIGNUM *hash, rsa_key *key, BN_CTX *ctx);
 int rsa_pksign_dec(BIGNUM *hash, BIGNUM *s, rsa_key *key, BN_CTX *ctx);
 
