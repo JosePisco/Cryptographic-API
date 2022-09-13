@@ -13,13 +13,13 @@ typedef struct rsa_key {
     BIGNUM *e;
     BIGNUM *d;
     BIGNUM *n;
-    int bits;
+    const int bits;
 } rsa_key;
 
 int gen_rsa_key(struct rsa_key *key, int nbits, BN_CTX *ctx);
-
 void free_rsa_key(rsa_key *key);
 
-int rsa_pksign(BIGNUM *s, unsigned char *msg, rsa_key *key, BN_CTX *ctx);
+int rsa_pksign(BIGNUM *s, BIGNUM *hash, rsa_key *key, BN_CTX *ctx);
+int rsa_pksign_dec(BIGNUM *hash, BIGNUM *s, rsa_key *key, BN_CTX *ctx);
 
 #endif /* RSA_H */

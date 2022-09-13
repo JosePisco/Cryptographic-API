@@ -4,13 +4,6 @@
 
 #include "lfsr.h"
 
-#define HEX_BIT_SIZE 4
-
-#define NB_TAPS 4
-#define LFSR_LENGTH 64
-#define SHUFFLE 2048
-#define OUTPUT_GIVEN 1024
-
 static uint64_t lfsr;
 static const uint8_t taps[NB_TAPS] = {LFSR_LENGTH, 56, 13, 10};
 
@@ -161,5 +154,22 @@ int bytesrandom(unsigned char *bytes, int size, uint64_t seed)
 
     ret = 1;
 
+    return ret;
+}
+
+int BN_getrandom(BIGNUM *r, int n)
+{
+    int ret = 0;
+    char *r_str = hexrandom(n, NO_SEED);
+    if (r_str == NULL)
+        goto done;
+    if (!BN_hex2bn(&r, r_str))
+        goto done;
+
+    free(r_str);
+
+    ret = 1;
+
+ done:
     return ret;
 }

@@ -23,14 +23,8 @@ int get_prime(BIGNUM *r, int n, BN_CTX *ctx)
 
     if (!BN_set_word(two, 2))
         goto done;
-
-    char *hexrand = hexrandom(n, 0);
-    if (hexrand == NULL)
+    if (!BN_getrandom(rand, n))
         goto done;
-    if (!BN_hex2bn(&rand, hexrand))
-        goto done;
-    free(hexrand);
-
 
     while (true) {
         if (!BN_is_odd(rand))

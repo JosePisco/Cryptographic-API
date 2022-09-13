@@ -86,34 +86,86 @@ int gen_rsa_key(struct rsa_key *key, int nbits, BN_CTX *ctx)
 	return ret;
 }
 
-/* Sends signed message from p1 to p2 */
-int rsa_pksign(BIGNUM *s, unsigned char *msg, rsa_key *key, BN_CTX *ctx)
+int rsa_encrypt(BIGNUM *c, BIGNUM *m, rsa_key *key, BN_CTX *ctx)
 {
 	int ret = 0;
 
-	BIGNUM *hash;
-	BIGNUM *res;
+	BN_CTX_start(ctx);
+
+	if (!BN_mod_exp(c, m, key->e, key->n, ctx))
+		goto done;
+
+	ret = 1;
+
+ done:
+	BN_CTX_end(ctx);
+
+	return ret;
+}
+
+int rsa_decrypt(BIGNUM *m, BIGNUM *c, rsa_key *key, BN_CTX *ctx)
+{
+	int ret = 0;
 
 	BN_CTX_start(ctx);
 
-	if ((hash = BN_CTX_get(ctx)) == NULL)
-		goto done;
-	if ((res = BN_CTX_get(ctx)) == NULL)
+	if (!BN_mod_exp(m, c, key->d, key->n, ctx))
 		goto done;
 
-	unsigned char *md = malloc(sizeof(unsigned char) * SHA256_DIGEST_LENGTH);
+	ret = 1;
 
-	SHA256(msg, 64, md); // RSA OR HMAC ??? LOL TAS LA REF ?
-	if (!BN_bin2bn(md, SHA256_DIGEST_LENGTH, hash))
-		goto done;
-	free(md);
+ done:
+	BN_CTX_end(ctx);
+
+	return ret;
+}
+
+int BN_sha256(unsigned char *data, unsigned char *md)
+{
+	int ret = 0;
+
+	SHA256(data, 64, md);
+
+	ret = 1;
+
+	return ret;
+}
+
+/* Sends signed message from p1 to p2 */
+int rsa_pksign(BIGNUM *s, BIGNUM *hash, rsa_key *key, BN_CTX *ctx)
+{
+	int ret = 0;
+
+
+	BN_CTX_start(ctx);
+
+	//unsigned char *md = malloc(sizeof(unsigned char) * SHA256_DIGEST_LENGTH);
+
+	//SHA256(msg, 64, md); // RSA OR HMAC ??? LOL TAS LA REF ?
+	//if (!BN_bin2bn(md, SHA256_DIGEST_LENGTH, hash))
+	//	goto done;
+	//free(md);
 
 	/* s = H(m)^d mod n */
 	if (!BN_mod_exp(s, hash, key->d, key->n, ctx))
 		goto done;
 
-	/* S = s^e mod n and the signature verifies */
-	if (!BN_mod_exp(res, s, key->e, key->n, ctx))
+	ret = 1;
+
+ done:
+	BN_CTX_end(ctx);
+
+	return ret;
+}
+
+int rsa_pksign_dec(BIGNUM *hash, BIGNUM *s, rsa_key *key, BN_CTX *ctx)
+{
+	int ret = 0;
+
+	BN_CTX_start(ctx);
+
+	/* H(m) = s^e mod n */
+	if (!BN_mod_exp(hash, s, key->e, key->n, ctx))
 		goto done;
 
 	ret = 1;

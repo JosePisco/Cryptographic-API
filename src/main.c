@@ -32,15 +32,15 @@ int main(void)
     free(prime_str);
 
     printf("---------------------------------------------------\n");
+    prime_size = 1024;
     printf("generating %d bits rsa key pair...", prime_size);
     fflush(stdout);
 
-    prime_size = 1024;
     rsa_key *key = malloc(sizeof(struct rsa_key));
     if (!gen_rsa_key(key, prime_size, ctx))
         goto done;
 
-    printf(" generated !\n");
+    printf(" generated!\n");
 
     char *e_ = BN_bn2dec(key->e);
     char *n_ = BN_bn2dec(key->n);
@@ -48,14 +48,14 @@ int main(void)
     printf("n = %s\n", n_);
 
     unsigned char *rand = malloc(sizeof(unsigned char) * 32);
-    if (!bytesrandom(rand, 32, 0))
+    if (!bytesrandom(rand, 32, NO_SEED))
         goto done;
 
     BIGNUM *s;
     if ((s = BN_CTX_get(ctx)) == NULL)
         goto done;
 
-    rsa_pksign(s, rand, key, ctx);
+    //rsa_pksign(s, rand, key, ctx);
 
     free(rand);
     free(e_);

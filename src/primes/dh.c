@@ -2,20 +2,16 @@
 #include "primes.h"
 #include "../prng/lfsr.h"
 
-#define DH_PRIVKEY_LEN 256 /* NIST recommandation*/
-
 int gen_dh_privkey(BIGNUM *privkey)
 {
     int ret = 0;
-    char *privkey_str = hexrandom(DH_PRIVKEY_LEN, 0);
-    if (!BN_hex2bn(&privkey, privkey_str))
+
+    if (!BN_getrandom(privkey, DH_PRIVKEY_LEN))
         goto done;
 
     ret = 1;
 
  done:
-    free(privkey_str);
-
     return ret;
 }
 
