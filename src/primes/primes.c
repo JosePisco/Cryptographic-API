@@ -49,3 +49,24 @@ int get_prime(BIGNUM *r, int n, BN_CTX *ctx)
 
         return ret;
 }
+
+int get_safe_prime(BIGNUM *modulus, int nbits, BN_CTX *ctx)
+{
+    int ret = 0;
+
+    while (1) {
+        if (!get_prime(modulus, nbits - 1, ctx))
+            goto done;
+        if (!BN_mul_word(modulus, 2))
+            goto done;
+        if (!BN_add_word(modulus, 1))
+            goto done;
+        if (is_prime(modulus, ctx))
+            break;
+    }
+
+    ret = 1;
+
+ done:
+    return ret;
+}
