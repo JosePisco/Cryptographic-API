@@ -61,13 +61,12 @@ static const uint8_t r_consts[] = {
     0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39 };
 
 /* xor() performs the xor operation on 16 bytes of blk and iv
- * for a block starting at start and stores the result in out
+ * and stores the result in out
  */
-static void xor_blk(uint8_t *blk, uint8_t *iv, int start, uint8_t *out)
+static void xor_blk(uint8_t *blk, uint8_t *iv, uint8_t *out)
 {
     for (int i = 0; i < AES_BLOCKSIZE; i++) {
-        int i_ = i + start;
-        out[i_] = blk[i_] ^ iv[i];
+        out[i] = blk[i] ^ iv[i];
     }
 }
 
@@ -317,7 +316,6 @@ void AES_CTX_set_IV(AES_CTX *aes_ctx, uint8_t *iv)
     memcpy(aes_ctx->iv, iv, AES_BLOCKSIZE);
 }
 
-#include <stdio.h>
 /*
  * Encrypts padded plaintext of length multiple of 16
  * using AES-CBC mode of encryption. The result is stored in res of same size
@@ -331,7 +329,7 @@ void AES_CBC_encrypt(AES_CTX *aes_ctx, uint8_t *plaintext, int length, uint8_t *
     memcpy(iv, aes_ctx->iv, AES_BLOCKSIZE);
 
     for (int i = 0; i < length; i += AES_BLOCKSIZE) {
-        xor_blk(plaintext, iv, i, iv);
+        xor_blk(plaintext+i, iv, iv);
         AES_encrypt((state_t *) iv, aes_ctx->round_keys);
 
         /* write ciphertext to res */
@@ -348,18 +346,18 @@ void AES_CBC_encrypt(AES_CTX *aes_ctx, uint8_t *plaintext, int length, uint8_t *
 void AES_CBC_decrypt(AES_CTX *aes_ctx, uint8_t *ciphertext, int length, uint8_t *res)
 {
     /* Creates a copy of the IV to work with, to not alterate CTX IV */
-    uint8_t *iv = aes_ctx->iv;
-    uint8_t ct_blk[AES_BLOCKSIZE];
-    memcpy(ct_blk, ciphertext, AES_BLOCKSIZE);
+    uint8_t ct[AES_BLOCKSIZE];
+    uint8_t iv[AES_BLOCKSIZE];
+    memcpy(iv, aes_ctx->iv, AES_BLOCKSIZE);
 
     for (int i = 0; i < length; i += AES_BLOCKSIZE) {
-        AES_decrypt((state_t *) ct_blk, aes_ctx->round_keys);
+        memcpy(ct, ciphertext+i, AES_BLOCKSIZE);
+        AES_decrypt((state_t *) ct, aes_ctx->round_keys);
 
         /* write plaintext to res */
-        xor_blk(ct_blk, iv, i, res);
+        xor_blk(ct, iv, res+i);
 
-        // assign new iv
-        memcpy(ct_blk, ciphertext+i, AES_BLOCKSIZE);
-        iv = ct_blk;
+        // get new block for decryption and assign new iv
+        memcpy(iv, ciphertext+i, AES_BLOCKSIZE);
     }
 }
