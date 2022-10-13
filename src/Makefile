@@ -1,8 +1,9 @@
 CC = gcc
-CFLAGS = -g3 -fsanitize=address -Wall -Wextra -Werror -std=c99 -pedantic
+CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic
+CDEBUG = -g3 -fsanitize=address
 LDFLAGS = -lcrypto -lasan
 
-SUBDIRS = bpsw primes prng
+SUBDIRS = bpsw primes prng aes
 SRC = $(wildcard */*.o) main.o
 BIN = crypto
 
@@ -10,6 +11,9 @@ all: $(SUBDIRS)
 	$(CC) -c $(CFLAGS) main.c
 	$(CC) -o $(BIN) $(CFLAGS) $(SRC) $(LDFLAGS)
 
+debug: $(SUBDIRS)
+	$(CC -c $(CFLAGS) main.c
+	$(CC) -o $(BIN) $(CFLAGS) $(CDEBUG) $(SRC) $(LDFLAGS)
 $(SUBDIRS):
 	$(MAKE) -C $@
 
