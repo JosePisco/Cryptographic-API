@@ -12,8 +12,8 @@ all: $(SUBDIRS)
 	$(CC) -o $(BIN) $(CFLAGS) $(SRC) $(LDFLAGS)
 
 debug: $(SUBDIRS)
-	$(CC -c $(CFLAGS) main.c
-	$(CC) -o $(BIN) $(CFLAGS) $(CDEBUG) $(SRC) $(LDFLAGS)
+	$(CC) -c $(CFLAGS) main.c
+	$(CC) -o $(BIN) $(CDEBUG) $(CFLAGS) $(SRC) $(LDFLAGS)
 $(SUBDIRS):
 	$(MAKE) -C $@
 
