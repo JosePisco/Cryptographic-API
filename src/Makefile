@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic
-CDEBUG = -g3 -fsanitize=address
+CDEBUG = -ggdb -fsanitize=address -fsanitize=undefined
 LDFLAGS = -lcrypto -lasan
 
 SUBDIRS = bpsw primes prng aes

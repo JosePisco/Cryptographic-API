@@ -1,6 +1,7 @@
 #include "primes.h"
 #include "rsa.h"
 
+/* Free key and its components */
 void free_rsa_key(rsa_key *key)
 {
 	BN_free(key->p);
@@ -13,6 +14,10 @@ void free_rsa_key(rsa_key *key)
 	free(key);
 }
 
+/*
+ * Generates a RSA key of nbits bits and places the public and private key
+ * in key
+ */
 int gen_rsa_key(struct rsa_key *key, int nbits, BN_CTX *ctx)
 {
 	BIGNUM *n, *p, *q, *p_minus_one, *e, *d, *phi, *tmp;
@@ -86,6 +91,10 @@ int gen_rsa_key(struct rsa_key *key, int nbits, BN_CTX *ctx)
 	return ret;
 }
 
+/*
+ * Encrypts a message m with the associated key and places
+ * the resulting encrypted message in c
+*/
 int rsa_encrypt(BIGNUM *c, BIGNUM *m, rsa_key *key, BN_CTX *ctx)
 {
 	int ret = 0;
@@ -103,6 +112,10 @@ int rsa_encrypt(BIGNUM *c, BIGNUM *m, rsa_key *key, BN_CTX *ctx)
 	return ret;
 }
 
+/*
+ * Decrypts an encrypted message c with the associated key and places
+ * the resulting decrypted message in m
+*/
 int rsa_decrypt(BIGNUM *m, BIGNUM *c, rsa_key *key, BN_CTX *ctx)
 {
 	int ret = 0;
@@ -120,7 +133,10 @@ int rsa_decrypt(BIGNUM *m, BIGNUM *c, rsa_key *key, BN_CTX *ctx)
 	return ret;
 }
 
-/* compute the sha256 of the bytes related version of BIGNUM a */
+/*
+ * Computes the sha256 of the bytes related version of BIGNUM a
+ * and stores the resulting digest in md.
+ */
 int BN_sha256(unsigned char *md, BIGNUM *a)
 {
 	int ret = 0;
